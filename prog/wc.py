@@ -2,6 +2,7 @@ import argparse
 
 def word_count(filenames, flags=None):
     results = {}
+    total_lines = total_words = total_chars = 0
 
     for filename in filenames:
         try:
@@ -12,18 +13,18 @@ def word_count(filenames, flags=None):
             num_words = sum(len(line.split()) for line in lines)
             num_chars = sum(len(line) for line in lines)
 
-            result = {}
-            if not flags or 'l' in flags:
-                result['lines'] = num_lines
-            if not flags or 'w' in flags:
-                result['words'] = num_words
-            if not flags or 'c' in flags:
-                result['chars'] = num_chars
+            results[filename] = (num_lines, num_words, num_chars)
 
-            results[filename] = result
+            total_lines += num_lines
+            total_words += num_words
+            total_chars += num_chars
 
         except FileNotFoundError:
             results[filename] = "File not found."
+
+    # Add totals if there iscmore than one file
+    if len(filenames) > 1:
+        results['total'] = (total_lines, total_words, total_chars)
 
     return results
 
@@ -50,6 +51,16 @@ if args.chars:
 results = word_count(args.filenames, flags)
 
 for filename, result in results.items():
-    print(f"Results for {filename}:")
-    for key, value in result.items():
-        print(f"  {key}: {value}")
+    if isinstance(result, tuple):
+        line_count, word_count, char_count = result
+        output = []
+        if not flags or 'l' in flags:
+            output.append(f"{line_count:8}")
+        if not flags or 'w' in flags:
+            output.append(f"{word_count:8}")
+        if not flags or 'c' in flags:
+            output.append(f"{char_count:8}")
+        output.append(f"{filename}")
+        print(' '.join(output))
+    else:
+        print(f"{filename}: {result}")
