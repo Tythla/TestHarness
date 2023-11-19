@@ -1,0 +1,14 @@
+{
+    "name": "Example",
+    "version": 1.0,
+    "features": {
+        "enabled": true,
+        "items": ["item1", "item2", "item3"],
+        "details": {
+            "author": "Yangbo Liu",
+            "license": "MIT"
+        }
+    },
+    "tags": ["test", "json", "example"],
+    "metadata": null
+}
