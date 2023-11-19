@@ -2,38 +2,36 @@ import json
 import argparse
 
 
-def set_value(dct, keys, value):
-    """Set a value in a nested dictionary based on a list of keys."""
-    for key in keys[:-1]:
-        if key.isdigit(): 
-            key = int(key)
-            if not isinstance(dct, list):
-                dct = [dct]
-            while len(dct) <= key:
-                dct.append({})
-            dct = dct[key]
-        else:
-            dct = dct.setdefault(key, {})
-    last_key = keys[-1]
-    if last_key.isdigit():
-        last_key = int(last_key)
-        if not isinstance(dct, list):
-            dct[last_key] = value
-        else:
-            while len(dct) <= last_key:
-                dct.append(None)
-            dct[last_key] = value
-    else:
-        dct[last_key] = value
-
-
 def ungron(lines):
     result = {}
+
     for line in lines:
         path, value = line.split(' = ')
-        keys = path.split('.')
         value = json.loads(value)
-        set_value(result, keys, value)
+        keys = path.split('.')
+        current_level = result
+
+        for i, key in enumerate(keys):
+            if '[' in key:
+                key, index = key.split('[')
+                # remove the closing bracket and convert to int
+                index = int(index[:-1])
+                current_level = current_level.setdefault(key, [])
+
+                if len(current_level) <= index:
+                    current_level.extend(
+                        [{}] * (index + 1 - len(current_level)))
+
+                if i == len(keys) - 1:
+                    current_level[index] = value
+                else:
+                    current_level = current_level[index]
+            else:
+                if i == len(keys) - 1:
+                    current_level[key] = value
+                else:
+                    current_level = current_level.setdefault(key, {})
+
     return result
 
 
